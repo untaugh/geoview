@@ -2,12 +2,20 @@
 #include <stdio.h>
 
 const char *vertexSource = "#version 130\n"
-  "in vec3 pos;\n"
-  "void main(){ gl_Position = vec4(pos.x, pos.y, pos.z, 1.0); }\n\0";
+    "in vec3 pos;\n"
+    "in vec4 color;\n"
+    "out vec4 outColor;\n"
+    "uniform mat4 model;\n"
+    "uniform mat4 view;\n"
+    "uniform mat4 projection;\n"
+    "void main(){ gl_Position = projection * view * model * vec4(pos.x, pos.y, pos.z, 1.0);\n"
+    "outColor = color;\n"
+    "}\n\0";
 
 const char *fragmentSource = "#version 130\n"
   "out vec4 FragColor;\n"
-  "void main(){ FragColor=vec4(0.0,1.0,0.0,1.0); }\n\0";
+    "in vec4 outColor;\n"
+  "void main(){ FragColor=outColor; }\n\0";
 
 GLuint createShader(uint32_t shaderType, const char * shaderSource)
 {
