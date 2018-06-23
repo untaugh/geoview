@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 
   printf("version: %d.%d\n", majorversion, minorversion);
   
-  glClearColor(0.1, 0.1, 0.1, 1.0);
+  glClearColor(0.3, 0.3, 0.3, 1.0);
   glEnable(GL_DEPTH_TEST);
   
   Mesh* mesh = makeCube(1,1,1,0,0,0);
@@ -128,11 +128,18 @@ int main(int argc, char **argv)
   GLuint modelLoc = glGetUniformLocation(program, "model");
   GLuint viewLoc = glGetUniformLocation(program, "view");
   GLuint projectionLoc = glGetUniformLocation(program, "projection");
+  GLuint lightLoc = glGetUniformLocation(program, "lightPos");
+  GLuint normalMatLoc = glGetUniformLocation(program, "normalMat");
 
+  vec3 light = {10, -10, 10};
+  
+  glUniform3fv(lightLoc, 1, (float*)light);
+  
   mat4 modelMat;
   mat4 viewMat;
   mat4 projectionMat;
-
+  mat4 normalMat;
+  
   bufferMesh(mesh);
   bufferMesh(mesh2);
   bufferMesh(mesh3);
@@ -158,7 +165,12 @@ int main(int argc, char **argv)
 
 	  glm_rotate_z(modelMat, -rotx/100, modelMat);
 	  glm_rotate_x(modelMat, -roty/100, modelMat);
+
+	  glm_mat4_inv(modelMat, normalMat);
+
+	  glm_mat4_transpose(normalMat);	  
 	  
+	  glUniformMatrix4fv(normalMatLoc, 1, GL_FALSE, (float*)normalMat);
 	  glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float*)modelMat);
 	  glUniformMatrix4fv(viewLoc, 1, GL_FALSE, (float*)viewMat);
 	  glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, (float*)projectionMat);
