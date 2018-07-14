@@ -54,11 +54,14 @@ uint32_t Geoview::run()
 
   Mesh cube0 = factory.cube(1,1,1);
   Mesh cube1 = factory.cube(1,1,1);
+  Mesh tetra0 = factory.tetra(1);
 
   cube1.translate(Eigen::Vector3d(1,1,1));
+  tetra0.translate(Eigen::Vector3d(2,0,0));
   
   Meshview view0(cube0);
   Meshview view1(cube1);
+  Meshview view2(tetra0);
   
   Shader shader;
 
@@ -79,6 +82,7 @@ uint32_t Geoview::run()
 
   view0.buffer();
   view1.buffer();
+  view2.buffer();
 
   while(!glfwWindowShouldClose(window))
     {
@@ -110,6 +114,7 @@ uint32_t Geoview::run()
       
       view0.draw();
       view1.draw();
+      view2.draw();
 	  
       glfwSwapBuffers(window);
 
