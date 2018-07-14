@@ -15,6 +15,8 @@ FILE(GLOB SRCFILES src/*.cpp)
 add_executable(${PROJECT_NAME} ${SRCFILES})
 
 include_directories("src")
+include_directories("~/git/geotree/src/")
+include_directories("/usr/include/eigen3")
 
 target_include_directories (${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

@@ -8,27 +8,32 @@
 
 Meshview::Meshview(Mesh &mesh)
 {
-  std::cout << mesh.nF << std::endl;
+  uint32_t numfaces = mesh.numFaces();
+  uint32_t numverts = numfaces * 3 * 2;
 
-  viewmesh = new Mesh(mesh.nF*3*2, mesh.nF);
+  F = (uint32_t*) malloc(sizeof(uint32_t) * numfaces * 3);
+  V = (float*) malloc(sizeof(float) * numverts * 3);
 
-  for(uint32_t i=0; i<viewmesh->nF; i++)
+  this->nV = numverts;
+  this->nF = numfaces;
+
+  for(uint32_t i=0; i<numfaces; i++)
     {
       for (uint32_t p=0; p<3; p++)
 	{
 	  uint32_t facevertex = i*3 + p;
 
-	  viewmesh->F[facevertex] = facevertex;
+	  F[facevertex] = facevertex;
 
-	  int face = mesh.F[facevertex];
+	  int face = mesh.F.row(i)[p];
 
-	  float v0 = mesh.V[face*3 + 0];
-	  float v1 = mesh.V[face*3 + 1];
-	  float v2 = mesh.V[face*3 + 2];
+	  float v0 = mesh.V.row(face)[0];
+	  float v1 = mesh.V.row(face)[1];
+	  float v2 = mesh.V.row(face)[2];
 
-	  viewmesh->V[facevertex * 3*2 + 0] = v0;
-	  viewmesh->V[facevertex * 3*2 + 1] = v1;
-	  viewmesh->V[facevertex * 3*2 + 2] = v2;
+	  V[facevertex * 3*2 + 0] = v0;
+	  V[facevertex * 3*2 + 1] = v1;
+	  V[facevertex * 3*2 + 2] = v2;
 	}
     }
 }
@@ -77,17 +82,17 @@ void Meshview::buffer()
 	    1.0, 0.0, 1.0, 1.0,
 	};
 
-    for (uint32_t i=0; i<viewmesh->nF; i++)
+    for (uint32_t i=0; i<nF; i++)
     {
-	int v0 = viewmesh->F[0+i*3];
-	int v1 = viewmesh->F[1+i*3];
-	int v2 = viewmesh->F[2+i*3];
+	int v0 = F[0+i*3];
+	int v1 = F[1+i*3];
+	int v2 = F[2+i*3];
 
 	glm::vec3 cross;
 
-	glm::vec3 a = { viewmesh->V[v0*3*2+0], viewmesh->V[v0*3*2+1], viewmesh->V[v0*3*2+2]};
-	glm::vec3 b = { viewmesh->V[v1*3*2+0], viewmesh->V[v1*3*2+1], viewmesh->V[v1*3*2+2]};
-	glm::vec3 c = { viewmesh->V[v2*3*2+0], viewmesh->V[v2*3*2+1], viewmesh->V[v2*3*2+2]};
+	glm::vec3 a = { V[v0*3*2+0], V[v0*3*2+1], V[v0*3*2+2]};
+	glm::vec3 b = { V[v1*3*2+0], V[v1*3*2+1], V[v1*3*2+2]};
+	glm::vec3 c = { V[v2*3*2+0], V[v2*3*2+1], V[v2*3*2+2]};
 	glm::vec3 d;
 	glm::vec3 e;
 
@@ -96,22 +101,22 @@ void Meshview::buffer()
 
 	cross = glm::normalize(glm::cross(d,e));
 	
-    	viewmesh->V[3+v0*3*2] = cross[0];
-    	viewmesh->V[4+v0*3*2] = cross[1];
-    	viewmesh->V[5+v0*3*2] = cross[2];
+    	V[3+v0*3*2] = cross[0];
+    	V[4+v0*3*2] = cross[1];
+    	V[5+v0*3*2] = cross[2];
 
-	viewmesh->V[3+v1*3*2] = cross[0];
-    	viewmesh->V[4+v1*3*2] = cross[1];
-    	viewmesh->V[5+v1*3*2] = cross[2];
+	V[3+v1*3*2] = cross[0];
+    	V[4+v1*3*2] = cross[1];
+    	V[5+v1*3*2] = cross[2];
 
-	viewmesh->V[3+v2*3*2] = cross[0];
-    	viewmesh->V[4+v2*3*2] = cross[1];
-    	viewmesh->V[5+v2*3*2] = cross[2];
+	V[3+v2*3*2] = cross[0];
+    	V[4+v2*3*2] = cross[1];
+    	V[5+v2*3*2] = cross[2];
     }
 
     for (int i=0; i<32; i++)
       {
-	std::cout << viewmesh->V[i] << std::endl;
+	std::cout << V[i] << std::endl;
       }
     
     glGenVertexArrays(1, &VAO);
@@ -122,10 +127,10 @@ void Meshview::buffer()
     glGenBuffers(1, &EBO);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t)*3*viewmesh->nF, viewmesh->F, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t)*3*nF, F, GL_STATIC_DRAW);
  
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*2*viewmesh->nV, viewmesh->V, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*2*nV, V, GL_STATIC_DRAW);
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) 0);
     glEnableVertexAttribArray(0);
@@ -143,7 +148,7 @@ void Meshview::buffer()
 void Meshview::draw()
 {
   glBindVertexArray(VAO);
-  glDrawElements(GL_TRIANGLES, 3*viewmesh->nF, GL_UNSIGNED_INT, 0);
+  glDrawElements(GL_TRIANGLES, 3*nF, GL_UNSIGNED_INT, 0);
   //glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
   //glDrawArrays(GL_TRIANGLES, 0, 3);
 }

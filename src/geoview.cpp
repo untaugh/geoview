@@ -7,8 +7,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
+#include "MeshFactory.h"
+
 #include "geoview.hpp"
-#include "factory.hpp"
 #include "shader.hpp"
 #include "meshview.hpp"
 
@@ -49,11 +50,13 @@ uint32_t Geoview::init()
 
 uint32_t Geoview::run()
 {
-  Factory factory;
+  MeshFactory factory;
 
-  Mesh cube0 = factory.cube(0,0,0, 1,1,1);
-  Mesh cube1 = factory.cube(1,1,1, 1,1,1);
+  Mesh cube0 = factory.cube(1,1,1);
+  Mesh cube1 = factory.cube(1,1,1);
 
+  cube1.translate(Eigen::Vector3d(1,1,1));
+  
   Meshview view0(cube0);
   Meshview view1(cube1);
   
